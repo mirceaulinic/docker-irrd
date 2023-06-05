@@ -1,0 +1,37 @@
+irrd:
+  database_url: postgresql://irrd:irrd@postgres:5432/irrd?keepalives=1&keepalives_idle=5
+  auth:
+    gnupg_keyring: /root/.gnupg/
+  log:
+    level: DEBUG
+  redis_url: "redis://redis:6379"
+  piddir: /var/run/irrd/
+  user: daemon
+  group: daemon
+  rpki:
+    roa_source: null
+  access_lists:
+    http_database_status:
+      - "::/0"
+      - "0.0.0.0/0"
+  server:
+    http:
+      interface: "::0"
+      port: 8080
+      access_list: http_database_status
+    whois:
+      interface: "::0"
+      port: 8043
+  email:
+    from: irrd@example.com
+    smtp: localhost
+  sources:
+    ALTDB:
+      # Run a full import at first, then periodic NRTM updates.
+      authoritative: false
+      keep_journal: true
+      import_source: "ftp://ftp.altdb.net/pub/altdb/altdb.db.gz"
+      import_serial_source: "ftp://ftp.altdb.net/pub/altdb/ALTDB.CURRENTSERIAL"
+      nrtm_host: whois.altdb.net
+      nrtm_port: 43
+      import_timer: 900 # every 15 minutes
