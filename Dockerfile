@@ -1,13 +1,17 @@
-FROM python:3.6-alpine
+FROM pypy:3.9-slim-buster
 
-ARG IRRD_VERSION=4.0.8
+ARG IRRD_VERSION=4.2.8
 
-RUN apk update \
- && apk add --no-cache --virtual .build-deps \
-        build-base musl-dev gcc python3 python3-dev postgresql-dev \
- && pip install --no-cache-dir cython irrd==$IRRD_VERSION \
- && rm -rf /var/cache/irrd \
- && apk del --no-cache .build-deps \
- && apk add gnupg postgresql
+COPY run.sh /opt/irrd/run
 
-CMD ["/usr/local/bin/twistd -n irrd"]
+RUN apt-get update \
+ && apt-get install -y build-essential gcc gnupg libpq-dev dumb-init \
+ && pip install --no-cache-dir -U pip \
+ && pip install --no-cache-dir irrd==$IRRD_VERSION \
+ && apt-get clean autoclean \
+ && apt-get autoremove -y \
+ && rm -rf /var/lib/apt/lists/*
+
+ENTRYPOINT ["/usr/bin/dumb-init", "--"]
+
+CMD ["/opt/irrd/run"]

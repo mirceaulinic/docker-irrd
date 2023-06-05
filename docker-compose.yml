@@ -1,0 +1,42 @@
+version: "3.9"
+
+services:
+  irrd:
+    build:
+      context: .
+    container_name: irrd
+    volumes:
+      - ./irrd.yaml:/etc/irrd.yaml:ro
+    ports:
+      - 8080:8080
+      - 8043:8043
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  postgres:
+    image: postgres:15.3
+    container_name: postgres
+    environment:
+      - "PGUSER=irrd"
+      - "POSTGRES_USER=irrd"
+      - "POSTGRES_PASSWORD=irrd"
+      - "POSTGRES_DB=irrd"
+    volumes:
+      - ./irrdb.sql:/docker-entrypoint-initdb.d/irrdb.sql
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -d irrd" ]
+      interval: 15s
+      timeout: 15s
+      retries: 5
+
+  redis:
+    image: redis
+    container_name: redis
+    healthcheck:
+      test: [ "CMD-SHELL", "redis-cli get nil" ]
+      interval: 60s
+      timeout: 5s
+      retries: 5
