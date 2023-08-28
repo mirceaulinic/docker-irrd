@@ -1,6 +1,6 @@
 FROM pypy:3.9-slim-buster
 
-ARG IRRD_VERSION=4.2.8
+ARG IRRD_VERSION=4.3.1
 
 COPY run.sh /opt/irrd/run
 
